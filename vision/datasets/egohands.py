@@ -23,6 +23,29 @@ class EgoHandsDataset:
     def _getitem(self, index):
         image_info = self.data[index]
         image = self._read_image(image_info['image_id'])
+        boxes = image_info['boxes']
+        labels = image_info['labels']
+        if self.transform:
+            image, boxes, labels = self.transform(image, boxes, labels)
+        if self.target_transform:
+            boxes, labels = self.target_transform(boxes, labels)
+        return image_info['image_id'], image, boxes, labels
+
+    def __getitem__(self, index):
+        _, image, boxes, labels = self._getitem(index)
+        return image, boxes, labels
+
+    def get_annotation(self, index):
+        image_id, image, boxes, labels = self._getitem(index)
+        is_difficult = np.zeros(boxes.shape[0], dtype=np.uint8)
+        return image_id, (boxes, labels, is_difficult)
+
+    def get_image(self, index):
+        image_info = self.data[index]
+        image = self._read_image(image_info['image_id'])
+        if self.transform:
+            image, _ = self.transform(image)
+        return image
 
     def _read_data(self):
         annotation_file = f"{self.root}/{self.dataset_type}/{self.dataset_type}_labels.csv"
@@ -32,12 +55,8 @@ class EgoHandsDataset:
         class_names = ['BACKGROUND'] + ["hand"]
         class_dict = {class_name: i for i, class_name in enumerate(class_names)}
         data = []
-        filesize = [1280, 720, 1280, 720]
         for image_id, group in annotations.groupby("filename"):
             boxes = group.loc[:, ["xmin", "ymin", "xmax", "ymax"]].values.astype(np.float32)
-            boxes = np.divide(boxes, filesize)
-            assert np.all(boxes >= 0) and np.all(boxes <= 1)
-
             labels = np.array([class_dict[name] for name in group["class"]])
             data.append({
                 'image_id': image_id,
