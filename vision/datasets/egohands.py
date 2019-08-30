@@ -69,14 +69,14 @@ class EgoHandsDataset:
         return len(self.data)
 
     def __repr__(self):
-        if self.class_state is None:
+        if self.class_stat is None:
             self.class_stat = {name: 0 for name in self.class_names[1:]}
             for example in self.data:
-                for class_index in examples['labels']:
+                for class_index in example['labels']:
                     class_name = self.class_names[class_index]
                     self.class_stat[class_name] += 1
         content = ["Dataset Summary:"
-                f"Number of Images: {len(self)}",
+                f"Number of Images: {len(self.data)}",
                 f"Min Number of Images: {self.min_image_num}",
                 "Label Distribution:"]
 
