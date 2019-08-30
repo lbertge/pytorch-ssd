@@ -75,8 +75,8 @@ class EgoHandsDataset:
                 for class_index in example['labels']:
                     class_name = self.class_names[class_index]
                     self.class_stat[class_name] += 1
-        content = ["Dataset Summary:"
-                f"Number of Images: {len(self.data)}",
+        content = ["Dataset Summary:",
+                f"Number of Images: {len(self)}",
                 f"Min Number of Images: {self.min_image_num}",
                 "Label Distribution:"]
 
