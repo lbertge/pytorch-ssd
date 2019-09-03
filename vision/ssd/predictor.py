@@ -35,7 +35,7 @@ class Predictor:
         with torch.no_grad():
             self.timer.start()
             scores, boxes = self.net.forward(images)
-            print("Inference time: ", self.timer.end())
+            print(f"Inference time: {self.timer.end()}s")
         boxes = boxes[0]
         scores = scores[0]
         if not prob_threshold:
@@ -47,8 +47,7 @@ class Predictor:
         picked_labels = []
         for class_index in range(1, scores.size(1)):
             probs = scores[:, class_index]
-            mask = probs > prob_threshold
-            probs = probs[mask]
+            probs = probs[probs > prob_threshold]
             if probs.size(0) == 0:
                 continue
             subset_boxes = boxes[mask, :]

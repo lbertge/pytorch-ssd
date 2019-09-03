@@ -6,15 +6,29 @@ from vision.ssd.mobilenet_v2_ssd_lite import create_mobilenetv2_ssd_lite, create
 from vision.utils.misc import Timer
 import cv2
 import sys
+import argparse
+import os.path as osp
 
+parser = argparse.ArgumentParser(
+    description="SSD inference in Pytorch")
 
-if len(sys.argv) < 5:
-    print('Usage: python run_ssd_example.py <net type>  <model path> <label path> <image path>')
-    sys.exit(0)
-net_type = sys.argv[1]
-model_path = sys.argv[2]
-label_path = sys.argv[3]
-image_path = sys.argv[4]
+parser.add_argument("--net_type", type=str, help="SSD network type",
+    choices=["vgg16-ssd", "mb1-ssd", "mb1-ssd-lite", "mb2-ssd-lite", "sq-ssd-lite"],
+    required=True)
+parser.add_argument("--model_path", type=str, help="Trained model path",
+    required=True)
+parser.add_argument("--label_path", type=str, help="Label path (class names, separated by newline",
+    required=True)
+parser.add_argument("--image_path", type=str, help="Image path (for demoing inference")
+
+args = parser.parse_args()
+
+net_type = args.net_type
+model_path = osp.expanduser(args.model_path)
+label_path = osp.expanduser(args.label_path)
+image_path = osp.expanduser(args.image_path)
+
+print(net_type, model_path, label_path, image_path)
 
 class_names = [name.strip() for name in open(label_path).readlines()]
 
@@ -48,7 +62,7 @@ else:
 
 orig_image = cv2.imread(image_path)
 image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
-boxes, labels, probs = predictor.predict(image, 10, 0.4)
+boxes, labels, probs = predictor.predict(image, 2, 0.4)
 
 for i in range(boxes.size(0)):
     box = boxes[i, :]
